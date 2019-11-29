@@ -9,9 +9,11 @@
 --
 -- 'URI' types, an internal module.
 
+{-# LANGUAGE CPP                 #-}
 {-# LANGUAGE DataKinds           #-}
 {-# LANGUAGE DeriveDataTypeable  #-}
 {-# LANGUAGE DeriveGeneric       #-}
+{-# LANGUAGE DeriveLift          #-}
 {-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE FlexibleInstances   #-}
 {-# LANGUAGE KindSignatures      #-}
@@ -60,6 +62,10 @@ import Data.Typeable (Typeable)
 import Data.Void
 import Data.Word (Word8, Word16)
 import GHC.Generics
+import Language.Haskell.TH.Syntax (Lift)
+#if MIN_VERSION_th_lift_instances(0,0,0)
+import Instances.TH.Lift ()
+#endif
 import Numeric (showInt, showHex)
 import Test.QuickCheck
 import Text.Megaparsec
@@ -97,7 +103,10 @@ data URI = URI
     -- of query string, so we deconstruct it following RFC 1866 here
   , uriFragment :: Maybe (RText 'Fragment)
     -- ^ Fragment, without @#@
-  } deriving (Show, Eq, Ord, Data, Typeable, Generic)
+  } deriving ( Show, Eq, Ord
+             , Data, Typeable, Generic
+             , Lift
+             )
 
 instance Arbitrary URI where
   arbitrary = URI
@@ -135,7 +144,10 @@ data Authority = Authority
     -- ^ Host
   , authPort :: Maybe Word
     -- ^ Port number
-  } deriving (Show, Eq, Ord, Data, Typeable, Generic)
+  } deriving ( Show, Eq, Ord
+             , Data, Typeable, Generic
+             , Lift
+             )
 
 instance Arbitrary Authority where
   arbitrary = Authority
@@ -153,7 +165,10 @@ data UserInfo = UserInfo
   , uiPassword :: Maybe (RText 'Password)
     -- ^ Password, 'Nothing' means that there was no @:@ character in the
     -- user info string
-  } deriving (Show, Eq, Ord, Data, Typeable, Generic)
+  } deriving ( Show, Eq, Ord
+             , Data, Typeable, Generic
+             , Lift
+             )
 
 instance Arbitrary UserInfo where
   arbitrary = UserInfo
@@ -170,7 +185,10 @@ data QueryParam
     -- ^ Flag parameter
   | QueryParam (RText 'QueryKey) (RText 'QueryValue)
     -- ^ Key–value pair
-  deriving (Show, Eq, Ord, Data, Typeable, Generic)
+  deriving ( Show, Eq, Ord
+           , Data, Typeable, Generic
+           , Lift
+           )
 
 instance Arbitrary QueryParam where
   arbitrary = oneof
@@ -197,7 +215,10 @@ instance NFData ParseException
 -- | Refined text labelled at the type level.
 
 newtype RText (l :: RTextLabel) = RText Text
-  deriving (Eq, Ord, Data, Typeable, Generic)
+  deriving ( Eq, Ord
+           , Data, Typeable, Generic
+           , Lift
+           )
 
 instance Show (RText l) where
   show (RText txt) = show txt
